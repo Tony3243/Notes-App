@@ -12,15 +12,12 @@ export function authenticateToken(req, res, next) {
     const bearer = header.split(" ");//turn header in an array --> [bearer, 8408909r]
     const token = bearer[1];
 
-    req.token = token;
-
-    jwt.verify({token: req.token}, process.env.JWT_SECRET, (err, decoded) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {//token is already an object
         if(err) {
             console.log("Error: Verification has failed.") 
-            return res.status(403)
-
+            return res.status(403).json({message: "Invalid token"})
         }
-        res.json({Successful_decoding: decoded })
+        req.user = user
+        next()
     })
-    next()
 }

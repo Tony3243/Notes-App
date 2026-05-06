@@ -3,6 +3,7 @@ import express from "express"//Node.js web framework that create API routes
 import 'dotenv/config'
 import { supabase } from "./config/supabase.js";
 import { authRouter } from './routes/authRoute.js'
+import { notesRouter } from "./routes/notesRoutes.js";
 
 const app = express();
 
@@ -12,6 +13,9 @@ app.use(express.json()) //parsing JSON Request
 
 //http://localhost:8000/api/auth/login
 app.use('/api/auth', authRouter)
+
+//http://localhost:8000/api/notes/test
+app.use('/api/notes', notesRouter)
 
 app.listen(PORT, () => {console.log(`Listening on port ${PORT}`)})
 .on('error', (err) => {console.error(err)})
