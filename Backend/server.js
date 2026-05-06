@@ -1,8 +1,8 @@
 //ENTRY POINTOF THE APP**
 import express from "express"//Node.js web framework that create API routes
-import nodeman from 'nodeman'
 import 'dotenv/config'
 import { supabase } from "./config/supabase.js";
+import { authRouter } from './routes/authRoute.js'
 
 const app = express();
 
@@ -10,24 +10,8 @@ const PORT = 8000;
 
 app.use(express.json()) //parsing JSON Request
 
-
-//http://localhost:8000
-app.get('/', async (req, res) => {
-    try {
-        const {data, error} = await supabase.from('users').select('name');
-        if(error) {
-            console.log(error);
-            return res.status(500).json({error: error.message})
-        }
-        res.json({
-            message: "Data is retrieved",
-            notes: data
-        })
-    } catch(err) {
-        console.error(err)
-        res.status(500).json({error: err})
-    }
-})
+//http://localhost:8000/api/auth/login
+app.use('/api/auth', authRouter)
 
 app.listen(PORT, () => {console.log(`Listening on port ${PORT}`)})
 .on('error', (err) => {console.error(err)})
