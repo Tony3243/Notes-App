@@ -11,12 +11,11 @@ const PORT = 8000;
 
 app.use(express.json()) //parsing JSON Request
 
-//http://localhost:8000/api/auth/login
+//http://localhost:8000/api/auth
 app.use('/api/auth', authRouter)
 
-//http://localhost:8000/api/notes/test
+//http://localhost:8000/api/notes
 app.use('/api/notes', notesRouter)
-
 app.listen(PORT, () => {console.log(`Listening on port ${PORT}`)})
 .on('error', (err) => {console.error(err)})
 // console.log('SUPABASE_URL:', process.env.SUPABASE_URL)

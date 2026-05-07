@@ -1,10 +1,8 @@
 import express from 'express'
 import { authenticateToken } from '../middleware/auth.js'
+import { getNotes, addNote } from '../controllers/notesControllers.js';
 
 export const notesRouter = express.Router();
 
-notesRouter.get('/test', authenticateToken, (req, res) => {
-    console.log('middleware hit'); // ← add this
-    console.log('auth header:', req.headers['authorization'])
-    res.json({ message: 'middleware works', user: req.users });
-  });
+notesRouter.get('/allNotes', authenticateToken, getNotes)
+notesRouter.post('/addNote', authenticateToken, addNote)
