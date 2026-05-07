@@ -24,6 +24,7 @@ export async function addNote(req, res) {
             recieved: `${req.body}`
         })
     }
+    //inserting the id is what connects the notes to the user. Without it, would result in null
     const {data: addingNote, error} = await supabase.from('notes').insert({title, body, user_id: req.user.id}).select().single()
     if(error) {
         console.log("error: ", error);
@@ -33,10 +34,27 @@ export async function addNote(req, res) {
     res.status(201).json(addingNote)
 }
 
-export async function UpdateNote() {
+export async function updateNote(req, res) {
+    const {title, body} = req.body;
+    const {id} = req.params//accesses the specific notes id for editing
 
+    //updating and returning notes based on the specific notes id & see if user_id matches the id in the token
+    const {data: updatingNote, error} = await supabase.from('notes').update({title, body}).eq('id', id).eq('user_id', req.user.id).select();
+    if(error) {
+        console.log('update error:', error);
+        return res.status(500).json({message: "Updating error"})
+    }
+    res.status(201).json(updatingNote)
 }
 
-export async function deleteNotes() {
+export async function deleteNotes(req, res) {
+    console.log(req.user)
+    const {id} = req.params;
 
+    const {data: deletingNote, error} = await supabase.from('notes').delete().eq('id', id).eq('user_id', req.user.id).select();
+    if(error) {
+        console.log('Delete error:', error);
+        return res.status(500).json({deleteMessage: error})
+    }
+    res.status(201).json(deletingNote)
 }
