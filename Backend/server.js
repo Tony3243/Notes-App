@@ -1,8 +1,7 @@
 //ENTRY POINTOF THE APP**
 import express from "express"//Node.js web framework that create API routes
 import 'dotenv/config'
-import { supabase } from "./config/supabase.js";
-import { authRouter } from './routes/authRoute.js'
+import { authRouter } from './routes/authRoute.js'//route path to my auth
 import { notesRouter } from "./routes/notesRoutes.js";
 
 const app = express();

@@ -1,4 +1,4 @@
-//creates a supabase client
+//creates a supabase client 
 import { createClient } from "@supabase/supabase-js/dist/index.cjs";
 
 export const supabase = createClient(

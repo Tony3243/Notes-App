@@ -5,6 +5,7 @@ export async function getNotes(req, res) {
         console.log("User does not exist. Not able to get notes")
         return res.json({message: "User not found"})
     }
+    //we get all notes unless the corret user logs in
     const {data: fetchingNotes, error} = await supabase.from('notes').select("*").eq('user_id', req.user.id)//req.user.id comes from authcontrollers where we stored stored id in id
     if(error) {
         console.log('error:', error)
@@ -16,7 +17,7 @@ export async function getNotes(req, res) {
 
 export async function addNote(req, res) {
     const {title, body} = req.body;
-
+    //check to see if all fields are filed
     if(!title || !body) {
         console.log("Missing field");
         return res.status(500).json({
@@ -24,7 +25,7 @@ export async function addNote(req, res) {
             recieved: `${req.body}`
         })
     }
-    //inserting the id is what connects the notes to the user. Without it, would result in null
+    //insertingand returning  the req.user.id is what connects the notes to the user. Without it, would result in null
     const {data: addingNote, error} = await supabase.from('notes').insert({title, body, user_id: req.user.id}).select().single()
     if(error) {
         console.log("error: ", error);
