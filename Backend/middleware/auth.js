@@ -13,6 +13,7 @@ export function authenticateToken(req, res, next) {
     const token = bearer[1];
 
     //uses .verify() to authenticate the token
+    //Also handles if token expired 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {//token is already an object
         if(err) {
             console.log("Error: Verification has failed.") 

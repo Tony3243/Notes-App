@@ -24,7 +24,7 @@ export async function register(req, res) {
 export async function login(req, res) {
     const {name, email, password_hash} = req.body;//access user input for destructured columns
     
-    const {data: nonexistentUser, error} = await supabase.from('users').select('id, name, email, password_hash').eq('email', email).single(); //selects columns based on if email exist in db
+    const {data: nonexistentUser} = await supabase.from('users').select('id, name, email, password_hash').eq('email', email).single(); //selects columns based on if email exist in db
     //no need to hash passsword again since already in db
     const comparing = await bcrypt.compare(password_hash, nonexistentUser.password_hash)//compare the stored hash password with user input password
     if(!comparing) {
@@ -37,15 +37,55 @@ export async function login(req, res) {
         return res.status(500).json({message: "Email invalid. Try again"})
     }
     //once loged in, created a payload of an id and email for the jwt token along wih the and a the JWT_secret token type
-    jwt.sign({id: nonexistentUser.id, email: nonexistentUser.email}, process.env.JWT_SECRET, {expiresIn: "1h"}, (err, token) => {
+    //the token user start off with before it exxpires
+    const accessToken = jwt.sign({id: nonexistentUser.id, email: nonexistentUser.email}, process.env.JWT_SECRET, {expiresIn: "1h"})
+    //token anly exist within a hypothetical callback for .sign(), eithout callback is synchrenous and immedialty return the token and lives within the variable
+    const refreshToken = jwt.sign({id: nonexistentUser.id, email: nonexistentUser.email}, process.env.JWT_REFRESH_SECRET, {expiresIn: "7d"})
+    await supabase.from('refresh_token').insert([{token: refreshToken, user_id: nonexistentUser.id}]).select()
+    res.json({accessToken, refreshToken})
+}
+
+export async function refresh(req, res) {
+    //access refreshToken
+    const {token} = req.body;
+    console.log(req.body.token)
+    //console.log(refreshToken)
+    if(!token) {
+        console.log("Refresh Token doesn't exist")
+        return res.status(404).json({message: "Refresh token doesn not exist"})
+    }
+
+    //select all the columns from refres_token if token matches with the refreshed token
+    const {data: refreshing} = await supabase.from('refresh_token').select('*').eq('token', token).single();
+    if(!refreshing) {
+        console.log("Tokens don't match")
+        return res.status(500).json({message: "Tokens don't match"})
+    }
+
+    //checks if refresh token is valid
+    jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, user) => {
         if(err) {
-            console.log("Error sign-up")
-            return res.status(403).json({message: "Error sign_up"})
-        } else {
-            console.log(`Welcome back ${name}. Token is ${token}`);
-            return res.json(token)
+            console.log("Error for refresh token verification")
+            return res.status(403).json({message: 'Invalid refresh token'})
         }
+       //if valid, create a new accessToken
+       const accessToken = jwt.sign({id: user.id, email: user.email}, process.env.JWT_SECRET, {expiresIn: '15m'})
+       return res.json({accessToken})
     })
+}
+
+//logout consist of deleting the refreshtoken from database, hence user has one more 15 min cycle
+export async function logout(req, res) {
+    const header = req.headers['authorization']
+    const token = header.split(" ")[1]
+    const {data: logoff} = await supabase.from('refresh_token').delete().eq('token', token).select()
+
+    if(!logoff) {
+        console.log("Can't find the token")
+        return res.status(404).json({message: "Can't log off"})
+    }
+    console.log("User logged out and refresh token is deleted?")
+    res.json({message: 'User logged off'})
 }
 
     
